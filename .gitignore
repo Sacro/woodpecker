@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+data/
+jay/
+momepy/
+momepy2
+
