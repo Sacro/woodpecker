@@ -1,26 +1,23 @@
 #!/usr/bin/env python3
 
+import momepy2 as mp2
+import networkx as nx
+from tobler.util import h3fy
+from pyogrio import read_dataframe, write_dataframe
+import h3
+from shapely import oriented_envelope
+from shapely.ops import linemerge
+from shapely import hausdorff_distance
+from shapely.geometry import MultiLineString, Polygon
+import numpy as np
+import geopandas as gp
 import os
 from functools import partial
 import datetime as dt
 import pandas as pd
 
 os.environ["USE_PYGEOS"] = "0"
-import geopandas as gp
-import numpy as np
 
-
-from shapely.geometry import MultiLineString, Polygon
-from shapely import hausdorff_distance
-from shapely.ops import linemerge
-from shapely import oriented_envelope
-import h3
-
-from pyogrio import read_dataframe, write_dataframe
-from tobler.util import h3fy
-
-import networkx as nx
-import momepy2 as mp2
 
 # from mapclassify import greedy
 
@@ -59,7 +56,8 @@ def get_subhexagon(gf, resolution):
 
 
 OUTFILE = "linetrack.gpkg"
-NETWORK = read_dataframe("data/network-model-simple.gpkg", layer="NetworkLinks")
+NETWORK = read_dataframe(
+    "data/network-model-simple.gpkg", layer="NetworkLinks")
 OSMNX = read_dataframe("data/great-britain-rail-simple.gpkg", layer="lines")
 OSMNX = OSMNX[OSMNX["location"] == "GB"].reset_index(drop=True)
 OSMNX = OSMNX.drop_duplicates()
@@ -182,7 +180,8 @@ def get_orientedbuffer(gf, width=4):
 
 
 def get_buffer(gs, width=4, length=1.0e4):
-    style = {"cap_style": "square", "join_style": "mitre", "mitre_limit": length}
+    style = {"cap_style": "square",
+             "join_style": "mitre", "mitre_limit": length}
     gs = gs["geometry"].copy()
     r = mp2.extend_lines(gs.to_frame(), 10.0, extension=length)
     r.index = gs.index

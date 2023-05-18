@@ -6,9 +6,9 @@ do
     mkdir -p ${i}
 done
 
-if [ ! -h momepy ]; then
-    git clone https://github.com/anisotropi4/momepy.git 
-    ln -s ../momepy/momepy src/momepy2
+if [ ! -d momepy ]; then
+    git clone https://github.com/anisotropi4/momepy.git
+    ln -sf ../momepy/momepy src/momepy2
 fi
 
 if [ ! -d jay ]; then
@@ -35,6 +35,8 @@ if [ ! -s data/${FILESTUB}-simple.gpkg ]; then
     ln jay/output/${FILESTUB}-simple.gpkg data/${FILESTUB}-simple.gpkg
 fi
 
+export USE_PYGEOS=0
+
 if [ ! -s linetrack.gpkg ]; then
     ./src/trackcheck.py
 fi
@@ -46,4 +48,3 @@ fi
 if [ ! -s tiploc-location.gpkg ]; then
     ./src/tiploc-match.py
 fi
-

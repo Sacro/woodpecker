@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from shapely.ops import nearest_points, split, snap
+from shapely import line_locate_point, line_interpolate_point, Point, LineString
+from pyogrio import read_dataframe, write_dataframe, list_layers
+import geopandas as gp
 import os
 import warnings
 import datetime as dt
@@ -7,10 +11,6 @@ from functools import partial
 import pandas as pd
 
 os.environ["USE_PYGEOS"] = "0"
-import geopandas as gp
-from pyogrio import read_dataframe, write_dataframe, list_layers
-from shapely import line_locate_point, line_interpolate_point, Point, LineString
-from shapely.ops import nearest_points, split, snap
 
 START = dt.datetime.now()
 pd.set_option("display.max_columns", None)
@@ -20,18 +20,19 @@ CENTRE2CENTRE = 3.26
 
 INFILE = "linetrack.gpkg"
 
-NETWORK = read_dataframe("data/network-model-simple.gpkg", layer="NetworkLinks")
+NETWORK = read_dataframe(
+    "../data/network-model-simple.gpkg", layer="NetworkLinks")
 NETWORK = NETWORK.dropna(how="all", axis=1)
-NODE = read_dataframe("data/network-model-simple.gpkg", layer="VectorNodes")
+NODE = read_dataframe("../data/network-model-simple.gpkg", layer="VectorNodes")
 NODE = NODE.dropna(how="all", axis=1)
 
-OSMNX = read_dataframe("data/great-britain-rail-simple.gpkg", layer="lines")
+OSMNX = read_dataframe("../data/great-britain-rail-simple.gpkg", layer="lines")
 OSMNX = OSMNX[OSMNX["location"] == "GB"].reset_index(drop=True)
 OSMNX = OSMNX.drop_duplicates()
 
 HEXAGON = read_dataframe("hexagon4.gpkg", layer="hexagon4-00")
 
-WAYMARK = read_dataframe("data/network-model-simple.gpkg", layer="Waymarks")
+WAYMARK = read_dataframe("../data/network-model-simple.gpkg", layer="Waymarks")
 
 
 def get_buffer(gs, width=4):
@@ -180,7 +181,8 @@ def set_fullnx(basenx, osmnx, outfile, layer):
 
 
 def get_network(network, osmnx, distance=CENTRE2CENTRE):
-    overlap = network.sjoin_nearest(osmnx, max_distance=distance, distance_col="d")
+    overlap = network.sjoin_nearest(
+        osmnx, max_distance=distance, distance_col="d")
     overlap = overlap.sort_values("d").drop_duplicates(subset="ASSETID")
     overlap = overlap.reset_index(drop=True)
     idx = pd.Index(network["ASSETID"]).difference(pd.Index(overlap["ASSETID"]))
@@ -392,7 +394,7 @@ def main():
     write_dataframe(HEXAGON, outfile, layer="hex")
     OUTER = HEXAGON.dissolve().explode(index_parts=False)
     write_dataframe(OUTER, outfile, layer="outer")
-    
+
     basenx = get_basenx(OSMNX)
     write_basenx(basenx, outfile, "basenx")
     set_fullnx(basenx, OSMNX, outfile, "fullnx")
